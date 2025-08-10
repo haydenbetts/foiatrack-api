@@ -1,0 +1,69 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  requests  Request[]
+}
+
+model Agency {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  jurisdiction String
+  state        String?
+  emails       String[]
+  portalUrl    String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  requests     Request[]
+}
+
+model Request {
+  id            String   @id @default(cuid())
+  userId        String
+  agencyId      String?
+  title         String
+  body          String
+  delivery      String
+  status        String
+  private       Boolean  @default(true)
+  filedAt       DateTime?
+  statutoryDue  String?
+  appealType    String?
+  appealWindow  String?
+  appealTarget  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id])
+  agency        Agency?  @relation(fields: [agencyId], references: [id])
+  messages      Message[]
+  files         File[]
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  requestId  String
+  direction  String
+  via        String
+  sender     String
+  recipients String[]
+  subject    String?
+  body       String?
+  createdAt  DateTime @default(now())
+  request    Request  @relation(fields: [requestId], references: [id])
+}
+
+model File {
+  id         String   @id @default(cuid())
+  requestId  String
+  key        String
+  name       String
+  size       Int
+  createdAt  DateTime @default(now())
+  request    Request  @relation(fields: [requestId], references: [id])
+}
